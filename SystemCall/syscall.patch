@@ -1,0 +1,77 @@
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index 18b5500ea8bf..d225587516b6 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -370,6 +370,8 @@
+ 446	common	landlock_restrict_self	sys_landlock_restrict_self
+ 447	common	memfd_secret		sys_memfd_secret
+ 448	common	process_mrelease	sys_process_mrelease
++449	common	s2_encrypt		sys_s2_encrypt
++
+ 
+ #
+ # Due to a historical design error, certain syscalls are numbered differently
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 252243c7783d..3a2f6290f43e 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -1165,6 +1165,9 @@ asmlinkage long sys_sysfs(int option,
+ 				unsigned long arg1, unsigned long arg2);
+ asmlinkage long sys_fork(void);
+ 
++/* kernel/ */
++SYSCALL_DEFINE2(s2_encrypt, const char __user *, input_string, int, key);
++
+ /* obsolete: kernel/time/time.c */
+ asmlinkage long sys_stime(__kernel_old_time_t __user *tptr);
+ asmlinkage long sys_stime32(old_time32_t __user *tptr);
+@@ -1253,6 +1256,7 @@ asmlinkage long sys_uname(struct old_utsname __user *);
+ asmlinkage long sys_olduname(struct oldold_utsname __user *);
+ #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
+ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
++
+ #endif
+ 
+ /* obsolete: ipc */
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 4df609be42d0..b5b847a9616b 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -3,6 +3,8 @@
+ # Makefile for the linux kernel.
+ #
+ 
++obj-y += my_func.o
++
+ obj-y     = fork.o exec_domain.o panic.o \
+ 	    cpu.o exit.o softirq.o resource.o \
+ 	    sysctl.o capability.o ptrace.o user.o \
+@@ -10,7 +12,7 @@ obj-y     = fork.o exec_domain.o panic.o \
+ 	    extable.o params.o \
+ 	    kthread.o sys_ni.o nsproxy.o \
+ 	    notifier.o ksysfs.o cred.o reboot.o \
+-	    async.o range.o smpboot.o ucount.o regset.o
++	    async.o range.o smpboot.o ucount.o regset.o 
+ 
+ obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o
+ obj-$(CONFIG_MODULES) += kmod.o
+diff --git a/net/socket.c b/net/socket.c
+index 7f64a6eccf63..c4897fddce4d 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1861,6 +1861,7 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
+ SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
+ 		int __user *, upeer_addrlen)
+ {
++	printk(KERN_INFO "Hello from accept()");
+ 	return __sys_accept4(fd, upeer_sockaddr, upeer_addrlen, 0);
+ }
+ 
+@@ -1920,6 +1921,7 @@ int __sys_connect(int fd, struct sockaddr __user *uservaddr, int addrlen)
+ SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr,
+ 		int, addrlen)
+ {
++	printk(KERN_INFO "Hello from connect()");
+ 	return __sys_connect(fd, uservaddr, addrlen);
+ }
+ 
