@@ -1,6 +1,6 @@
 # Operating System Projects
 #### Taein Um
-This repository contains the completed projects done in Operating Systems class in Stony Brook University in Fall 2023.
+This repository contains the completed projects done in Operating Systems class in Stony Brook University.
 
 
 ## Overview
